@@ -1,20 +1,14 @@
 package com.decadance.Back_DecaDance_PFI.service;
 
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import com.decadance.Back_DecaDance_PFI.dto.request.LoginRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.UserRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.UserResponseDTO;
 import com.decadance.Back_DecaDance_PFI.entity.User;
 import com.decadance.Back_DecaDance_PFI.mapper.UserMapper;
 import com.decadance.Back_DecaDance_PFI.repository.UserRepository;
-
 import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

@@ -1,16 +1,24 @@
 package com.decadance.Back_DecaDance_PFI.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.decadance.Back_DecaDance_PFI.entity.User;
+import com.decadance.Back_DecaDance_PFI.dto.request.UserImageUpdateRequestDTO;
+import com.decadance.Back_DecaDance_PFI.dto.request.UserNameUpdateRequestDTO;
+import com.decadance.Back_DecaDance_PFI.dto.response.UserResponseDTO;
 import com.decadance.Back_DecaDance_PFI.service.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("api/v1/users")
@@ -23,22 +31,34 @@ public class UserController {
         this.userService = userService;
     }
 
-     @GetMapping("/username/{name}")
-    public ResponseEntity<User> getUserByName(@PathVariable String name) {
-        return new ResponseEntity<>(userService.getUserByUsername(name), HttpStatus.OK);
-    }
-
-    @GetMapping("/user/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
-    }
-
     @GetMapping
-    public ResponseEntity<List<User>> getUsers(){
-        return userService.getUsers();
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        List<UserResponseDTO> response = userService.getAllUsers();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // @PostMapping
-    // @PatchMapping
-    // @DeleteMapping
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
+        UserResponseDTO response = userService.getUserById(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PatchMapping("/username/{id}")
+    public ResponseEntity<UserResponseDTO> updateUsername(@PathVariable Long id, @Valid @RequestBody UserNameUpdateRequestDTO payload) {
+        UserResponseDTO response = userService.updateUsername(id, payload.username());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PatchMapping("/image/{id}")
+    public ResponseEntity<UserResponseDTO> updateUserImage(@PathVariable Long id, @Valid @RequestBody UserImageUpdateRequestDTO payload) {
+        UserResponseDTO response = userService.updateUserImage(id, payload.image());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT); 
+    }
+
 }

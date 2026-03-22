@@ -34,31 +34,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-     @Override
-    public ResponseEntity<User> getUserById(Long id) {
-        User user = userRepository.findById(id).get();
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
-
-    @Override
-    public User getUserByUsername(String name) {
-        User user = userRepository.findByUsername(name).get();
-        return user;
-    }
-
-    @Override
-    public ResponseEntity<List<User>> getUsers() {
-        List<User> users = userRepository.findAll();
-        return new ResponseEntity<>(users, HttpStatus.OK);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
-                .map(user -> new UserDetail(user))
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el nombre: " + username));
-    }
-
     @Override
     @Transactional
     public UserResponseDTO registerUser(UserRequestDTO request) {
@@ -74,5 +49,52 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userMapper.toResponse(savedUser);
     }
 
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .map(user -> new UserDetail(user))
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el nombre: " + username));
+    }
+
+    @Override
+    public List<UserResponseDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(userMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public UserResponseDTO getUserById(Long id) {
+        return userRepository.findById(id)
+                .map(userMapper::toResponse)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+    }
+
+    @Override
+    public UserResponseDTO updateUsername(Long id, String newUsername) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+        if (!user.getUsername().equals(newUsername) && userRepository.existsByUsername(newUsername)) {
+            throw new RuntimeException("El nombre de usuario '" + newUsername + "' ya está en uso.");
+        }
+        user.setUsername(newUsername);
+        return userMapper.toResponse(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponseDTO updateUserImage(Long id, String image) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+        user.setImage(image); 
+        return userMapper.toResponse(userRepository.save(user));
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("Usuario no encontrado con ID: " + id);
+        }
+        userRepository.deleteById(id);
+    }
 
 }

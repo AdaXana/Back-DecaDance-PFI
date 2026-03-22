@@ -11,6 +11,10 @@ import com.decadance.Back_DecaDance_PFI.entity.User;
 import com.decadance.Back_DecaDance_PFI.mapper.UserMapper;
 import com.decadance.Back_DecaDance_PFI.repository.UserRepository;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,6 +34,31 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+     @Override
+    public ResponseEntity<User> getUserById(Long id) {
+        User user = userRepository.findById(id).get();
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @Override
+    public User getUserByUsername(String name) {
+        User user = userRepository.findByUsername(name).get();
+        return user;
+    }
+
+    @Override
+    public ResponseEntity<List<User>> getUsers() {
+        List<User> users = userRepository.findAll();
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .map(user -> new UserDetail(user))
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el nombre: " + username));
+    }
+
     @Override
     @Transactional
     public UserResponseDTO registerUser(UserRequestDTO request) {
@@ -43,23 +72,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setPassword(passwordEncoder.encode(request.password()));
         User savedUser = userRepository.save(user);
         return userMapper.toResponse(savedUser);
-    }
-
-    @Override
-    public UserResponseDTO login(LoginRequestDTO request) {
-        User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("Contraseña incorrecta");
-        }
-        return userMapper.toResponse(user);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
-                .map(user -> new UserDetail(user))
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el nombre: " + username));
     }
 
 

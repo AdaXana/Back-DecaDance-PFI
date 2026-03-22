@@ -1,6 +1,5 @@
 package com.decadance.Back_DecaDance_PFI.controller;
 
-import com.decadance.Back_DecaDance_PFI.dto.request.LoginRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.UserRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.UserResponseDTO;
 import com.decadance.Back_DecaDance_PFI.service.UserService;
@@ -28,9 +27,4 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
-        UserResponseDTO response = userService.login(request);
-        return ResponseEntity.ok(response); 
-    }
 }

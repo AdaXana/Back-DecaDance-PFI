@@ -46,7 +46,7 @@ Para levantar este proyecto en tu entorno local, necesitarás tener instalado:
 
 1. **Clona el repositorio:**
    ```bash
-   git clone [https://github.com/TU_USUARIO/Back-DecaDance-PFI.git](https://github.com/TU_USUARIO/Back-DecaDance-PFI.git)
+   git clone [https://github.com/AdaXana/Back-DecaDance-PFI.git]
    cd Back-DecaDance-PFI
 
 2. **Configura la Base de Datos:**

@@ -59,15 +59,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserResponseDTO getUserById(Long id) {
-        return userRepository.findById(id)
-                .map(userMapper::toResponse)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+        User user = getUserByIdOrThrow(id);
+        return userMapper.toResponse(user);
     }
 
     @Override
+    @Transactional
     public UserResponseDTO updateUsername(Long id, String newUsername) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+        User user = getUserByIdOrThrow(id);
         if (!user.getUsername().equals(newUsername) && userRepository.existsByUsername(newUsername)) {
             throw new RuntimeException("El nombre de usuario '" + newUsername + "' ya está en uso.");
         }
@@ -76,19 +75,24 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public UserResponseDTO updateUserImage(Long id, String image) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+        User user = getUserByIdOrThrow(id);
         user.setImage(image); 
         return userMapper.toResponse(userRepository.save(user));
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("Usuario no encontrado con ID: " + id);
-        }
-        userRepository.deleteById(id);
+        User user = getUserByIdOrThrow(id);
+        userRepository.delete(user);
+    }
+
+
+    private User getUserByIdOrThrow(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
     }
 
 }

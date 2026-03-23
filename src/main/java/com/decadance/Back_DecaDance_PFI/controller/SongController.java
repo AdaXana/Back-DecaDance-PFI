@@ -44,6 +44,12 @@ public class SongController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<List<SongResponseDTO>> getActiveSongs() {
+        List<SongResponseDTO> response = songService.getActiveSongs();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<SongResponseDTO> getSongById(@PathVariable Long id) {
         SongResponseDTO response = songService.getSongById(id);

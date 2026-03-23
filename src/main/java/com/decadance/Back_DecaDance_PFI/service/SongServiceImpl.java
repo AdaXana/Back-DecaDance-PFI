@@ -1,14 +1,12 @@
 package com.decadance.Back_DecaDance_PFI.service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.SongResponseDTO;
 import com.decadance.Back_DecaDance_PFI.entity.Song;
 import com.decadance.Back_DecaDance_PFI.mapper.SongMapper;
 import com.decadance.Back_DecaDance_PFI.repository.SongRepository;
-
 import jakarta.transaction.Transactional;
 
 @Service
@@ -41,17 +39,22 @@ public class SongServiceImpl implements SongService {
     }
 
     @Override
+    public List<SongResponseDTO> getActiveSongs() {
+        return songRepository.findByIsActiveTrue().stream()
+                .map(songMapper::toResponse)
+                .toList();
+    }
+
+    @Override
     public SongResponseDTO getSongById(Long id) {
-        Song song = songRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException( "Canción no encontrada con ID: " + id));
+        Song song = getSongByIdOrThrow(id);
         return songMapper.toResponse(song);
     }
 
     @Override
     @Transactional
     public SongResponseDTO updateTitle(Long id, String newTitle) {
-        Song song = songRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Canción no encontrada con ID: " + id));
+        Song song = getSongByIdOrThrow(id);
         song.setTitle(newTitle);
         return songMapper.toResponse(songRepository.save(song));
     }
@@ -59,8 +62,7 @@ public class SongServiceImpl implements SongService {
     @Override
     @Transactional
     public SongResponseDTO updateArtist(Long id, String newArtist) {
-        Song song = songRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Canción no encontrada con ID: " + id));
+        Song song = getSongByIdOrThrow(id);
         song.setArtist(newArtist);
         return songMapper.toResponse(songRepository.save(song));
     }
@@ -68,8 +70,7 @@ public class SongServiceImpl implements SongService {
     @Override
     @Transactional
     public SongResponseDTO updateYear(Long id, Integer newYear) {
-        Song song = songRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Canción no encontrada con ID: " + id));
+        Song song = getSongByIdOrThrow(id);
         song.setYear(newYear);
         return songMapper.toResponse(songRepository.save(song));
     }
@@ -77,8 +78,7 @@ public class SongServiceImpl implements SongService {
     @Override
     @Transactional
     public SongResponseDTO updateCoverUrl(Long id, String newCoverUrl) {
-        Song song = songRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Canción no encontrada con ID: " + id));
+        Song song = getSongByIdOrThrow(id);
         song.setCoverUrl(newCoverUrl);
         return songMapper.toResponse(songRepository.save(song));
     }
@@ -86,8 +86,7 @@ public class SongServiceImpl implements SongService {
     @Override
     @Transactional
     public SongResponseDTO updateStatus(Long id, Boolean isActive) {
-        Song song = songRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Canción no encontrada con ID: " + id));
+        Song song = getSongByIdOrThrow(id);
         song.setIsActive(isActive);
         return songMapper.toResponse(songRepository.save(song));
     }
@@ -95,9 +94,14 @@ public class SongServiceImpl implements SongService {
     @Override
     @Transactional
     public void deleteSong(Long id) {
-        Song song = songRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Canción no encontrada con ID: " + id));
+        Song song = getSongByIdOrThrow(id);
         songRepository.delete(song);
+    }
+
+
+    private Song getSongByIdOrThrow(Long id) {
+        return songRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Canción no encontrada con ID: " + id));
     }
 
 }

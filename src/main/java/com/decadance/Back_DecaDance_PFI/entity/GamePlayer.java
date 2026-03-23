@@ -26,8 +26,11 @@ public class GamePlayer {
     private Game game;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
+
+    @Column(nullable = false) 
+    private String nickname;
 
     @Column(nullable = false)
     private Boolean isHost = false;

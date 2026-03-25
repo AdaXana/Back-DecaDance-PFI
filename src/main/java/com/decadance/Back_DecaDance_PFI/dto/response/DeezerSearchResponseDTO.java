@@ -4,4 +4,6 @@ import java.util.List;
 
 public record DeezerSearchResponseDTO(
     List<DataResponseDTO> data
-) {}
+) {
+    
+}

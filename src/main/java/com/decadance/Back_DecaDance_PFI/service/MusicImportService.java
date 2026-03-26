@@ -3,6 +3,7 @@ package com.decadance.Back_DecaDance_PFI.service;
 import com.decadance.Back_DecaDance_PFI.dto.external.ExportifyCsvDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.DataResponseDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.DeezerSearchResponseDTO;
+import com.decadance.Back_DecaDance_PFI.dto.request.SongRequestDTO;
 import com.decadance.Back_DecaDance_PFI.entity.Song;
 import com.decadance.Back_DecaDance_PFI.mapper.SongMapper;
 import com.decadance.Back_DecaDance_PFI.repository.SongRepository;
@@ -13,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -56,7 +58,46 @@ public class MusicImportService {
         String cleanArtist = row.getArtistName().split(",")[0].trim();
         String query = track + " " + cleanArtist;
 
-        DeezerSearchResponseDTO searchResponse = webClient.get()
+        DeezerSearchResponseDTO searchResponse = executeDeezerSearch(query);
+
+        if (searchResponse != null && !searchResponse.data().isEmpty()) {
+            DataResponseDTO trackInfo = searchResponse.data().get(0);
+
+            EnrichedData enriched = enrichSongData(trackInfo.album().id(), trackInfo.title());
+
+            Song song = songMapper.toEntity(trackInfo);
+            song.setYear(enriched.year());
+            song.setGenre(enriched.genre());
+            songRepository.save(song);
+        }
+    }
+
+    public List<SongRequestDTO> searchSongsInDeezer(String query) {
+        DeezerSearchResponseDTO searchResponse = executeDeezerSearch(query);
+
+        if (searchResponse == null || searchResponse.data() == null || searchResponse.data().isEmpty()) {
+            return List.of();
+        }
+        List<DataResponseDTO> topResults = searchResponse.data().stream().limit(50).toList();
+        List<SongRequestDTO> finalResults = new ArrayList<>();
+        for (DataResponseDTO trackInfo : topResults) {
+            EnrichedData enriched = enrichSongData(trackInfo.album().id(), trackInfo.title());
+            SongRequestDTO songDTO = new SongRequestDTO(
+                    trackInfo.id(),
+                    trackInfo.title(),
+                    trackInfo.artist().name(),
+                    enriched.year(),
+                    enriched.genre(),
+                    trackInfo.album().coverMedium(),
+                    trackInfo.preview());
+            finalResults.add(songDTO);
+        }
+        return finalResults;
+    }
+
+
+    private DeezerSearchResponseDTO executeDeezerSearch(String query) {
+        return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search")
                         .queryParam("q", query)
@@ -64,30 +105,33 @@ public class MusicImportService {
                 .retrieve()
                 .bodyToMono(DeezerSearchResponseDTO.class)
                 .block();
+    }
 
-        if (searchResponse != null && !searchResponse.data().isEmpty()) {
-            DataResponseDTO trackInfo = searchResponse.data().get(0);
-
+    private EnrichedData enrichSongData(Long albumId, String title) {
+        Integer year = 0;
+        String genre = "all";
+        try {
             DataResponseDTO.AlbumDTO albumDetail = webClient.get()
-                    .uri("/album/" + trackInfo.album().id())
+                    .uri("/album/" + albumId)
                     .retrieve()
                     .bodyToMono(DataResponseDTO.AlbumDTO.class)
                     .block();
-
-            Song song = songMapper.toEntity(trackInfo);
-
             if (albumDetail != null) {
                 if (albumDetail.releaseDate() != null && albumDetail.releaseDate().length() >= 4) {
-                    song.setYear(Integer.parseInt(albumDetail.releaseDate().substring(0, 4)));
+                    year = Integer.parseInt(albumDetail.releaseDate().substring(0, 4));
                 }
-
-                if (albumDetail.genres() != null && !albumDetail.genres().data().isEmpty()) {
-                    song.setGenre(albumDetail.genres().data().get(0).name());
-                } else {
-                    song.setGenre("all");
+                if (albumDetail.genres() != null && albumDetail.genres().data() != null
+                        && !albumDetail.genres().data().isEmpty()) {
+                    genre = albumDetail.genres().data().get(0).name();
                 }
             }
-            songRepository.save(song);
+        } catch (Exception e) {
+            System.err.println("Error al cargar detalles del álbum para: " + title);
         }
+        return new EnrichedData(year, genre);
     }
+
+    private record EnrichedData(Integer year, String genre) {
+    }
+
 }

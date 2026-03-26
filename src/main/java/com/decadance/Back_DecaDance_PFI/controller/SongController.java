@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongArtistUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongCoverUrlUpdateRequestDTO;
@@ -19,6 +20,7 @@ import com.decadance.Back_DecaDance_PFI.dto.request.SongStatusUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongTitleUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongYearUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.SongResponseDTO;
+import com.decadance.Back_DecaDance_PFI.service.MusicImportService;
 import com.decadance.Back_DecaDance_PFI.service.SongService;
 
 @RestController
@@ -27,9 +29,11 @@ import com.decadance.Back_DecaDance_PFI.service.SongService;
 public class SongController {
 
     private final SongService songService;
+    private final MusicImportService musicImportService;
 
-    public SongController(SongService songService){
+    public SongController(SongService songService, MusicImportService musicImportService){
         this.songService = songService;
+        this.musicImportService = musicImportService;
     }
 
     @PostMapping
@@ -93,4 +97,11 @@ public class SongController {
         songService.deleteSong(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("/search-deezer")
+    public ResponseEntity<List<SongRequestDTO>> searchInDeezer(@RequestParam String query) {
+        List<SongRequestDTO> response = musicImportService.searchSongsInDeezer(query);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    
 }

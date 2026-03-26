@@ -16,8 +16,7 @@ public class SpringConfig {
     private final CustomAuthenticationManager customAuthenticationManager;
     private final String jwtSecret;
 
-    public SpringConfig(CustomAuthenticationManager customAuthenticationManager, 
-                        @Value("${jwt.secret}") String jwtSecret) {
+    public SpringConfig(CustomAuthenticationManager customAuthenticationManager, @Value("${jwt.secret}") String jwtSecret) {
         this.customAuthenticationManager = customAuthenticationManager;
         this.jwtSecret = jwtSecret;
     }
@@ -27,18 +26,19 @@ public class SpringConfig {
 
         JWTAuthenticationFilter authenticationFilter = new JWTAuthenticationFilter(customAuthenticationManager, jwtSecret);
         
-        authenticationFilter.setFilterProcessesUrl("/api/auth/login");
+        authenticationFilter.setFilterProcessesUrl("/api/v1/auth/login");
 
         http
             .csrf(csrf -> csrf.disable())
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
             .authorizeHttpRequests(request -> request
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/songs/active").authenticated()
+                .requestMatchers("/api/v1/songs/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/users/username/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/users").hasAnyRole("ADMIN", "USER")
-                .requestMatchers("/api/songs/**").hasRole("ADMIN")
-                .requestMatchers("/api/game/**").authenticated()
+                .requestMatchers("/api/v1/games/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilter(authenticationFilter)

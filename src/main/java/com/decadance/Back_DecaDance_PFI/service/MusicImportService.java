@@ -78,7 +78,7 @@ public class MusicImportService {
         if (searchResponse == null || searchResponse.data() == null || searchResponse.data().isEmpty()) {
             return List.of();
         }
-        List<DataResponseDTO> topResults = searchResponse.data().stream().limit(10).toList();
+        List<DataResponseDTO> topResults = searchResponse.data().stream().limit(50).toList();
         List<SongRequestDTO> finalResults = new ArrayList<>();
         for (DataResponseDTO trackInfo : topResults) {
             EnrichedData enriched = enrichSongData(trackInfo.album().id(), trackInfo.title());

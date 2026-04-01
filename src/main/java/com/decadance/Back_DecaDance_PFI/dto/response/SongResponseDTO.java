@@ -6,7 +6,8 @@ public record SongResponseDTO(
     String title,
     String artist,
     Integer year,
-    String genre,
+    Long idGenre,
+    String genreName,
     String coverUrl,
     String previewUrl,
     Boolean isActive

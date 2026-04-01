@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongArtistUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongCoverUrlUpdateRequestDTO;
+import com.decadance.Back_DecaDance_PFI.dto.request.SongGenreUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongStatusUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongTitleUpdateRequestDTO;
@@ -37,8 +38,8 @@ public class SongController {
     }
 
     @PostMapping
-    public ResponseEntity<SongResponseDTO> createSong(@Valid @RequestBody SongRequestDTO request) {
-        SongResponseDTO response = songService.createSong(request);
+    public ResponseEntity<SongResponseDTO> createSong(@Valid @RequestBody SongRequestDTO dto) {
+        SongResponseDTO response = songService.createSong(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -84,6 +85,12 @@ public class SongController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PatchMapping("/genre/{id}")
+    public ResponseEntity<SongResponseDTO> updateGenre(@PathVariable Long id, @Valid @RequestBody SongGenreUpdateRequestDTO payload) {
+        SongResponseDTO response = songService.updateGenre(id, payload.idGenre());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }   
+
     @PatchMapping("/status/{id}")
     public ResponseEntity<SongResponseDTO> updateStatus(
             @PathVariable Long id, 
@@ -102,6 +109,12 @@ public class SongController {
     public ResponseEntity<List<SongRequestDTO>> searchInDeezer(@RequestParam String query) {
         List<SongRequestDTO> response = musicImportService.searchSongsInDeezer(query);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/import/{fileName}")
+    public ResponseEntity<String> importCsv(@PathVariable String fileName) {
+        musicImportService.importSongsFromCsv(fileName);
+        return ResponseEntity.ok("Proceso de importación iniciado para el archivo: " + fileName);
     }
     
 }

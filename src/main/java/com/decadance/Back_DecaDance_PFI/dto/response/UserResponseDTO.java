@@ -9,7 +9,8 @@ public record UserResponseDTO(
     Integer played,
     Integer victories,
     Integer successes,
-    Integer fails
+    Integer fails,
+    Boolean isDeezerLinked
 ) {
 
 }

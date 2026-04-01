@@ -24,8 +24,13 @@ public interface SongMapper {
 
     @Mapping(target = "idSong", ignore = true)
     @Mapping(target = "isActive", constant = "true")
+    @Mapping(target = "genre", ignore = true)
 
     Song toEntity(SongRequestDTO dto);
 
+
+    @Mapping(target = "idGenre", source = "genre.idGenre")
+    @Mapping(target = "genreName", source = "genre.genreName")
+    
     SongResponseDTO toResponse(Song entity);
 }

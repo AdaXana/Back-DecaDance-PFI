@@ -6,7 +6,7 @@ import com.decadance.Back_DecaDance_PFI.entity.User;
 import com.decadance.Back_DecaDance_PFI.mapper.UserMapper;
 import com.decadance.Back_DecaDance_PFI.repository.UserRepository;
 import java.util.List;
-import org.springframework.transaction.annotation.Transactional;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,17 +30,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     @Transactional
-    public UserResponseDTO registerUser(UserRequestDTO request) {
-        if (userRepository.existsByUsername(request.username())) {
-            throw new RuntimeException("El nombre de usuario '" + request.username() + "' ya está en uso.");
+    public UserResponseDTO registerUser(UserRequestDTO dto) {
+        if (userRepository.existsByUsername(dto.username())) {
+            throw new RuntimeException("El nombre de usuario '" + dto.username() + "' ya está en uso.");
         }
-        if (userRepository.existsByEmail(request.email())) {
-            throw new RuntimeException("El email '" + request.email() + "' ya está registrado.");
+        if (userRepository.existsByEmail(dto.email())) {
+            throw new RuntimeException("El email '" + dto.email() + "' ya está registrado.");
         }
-        User user = userMapper.toEntity(request);
-        user.setPassword(passwordEncoder.encode(request.password()));
-        User savedUser = userRepository.save(user);
-        return userMapper.toResponse(savedUser);
+        User user = userMapper.toEntity(dto);
+        user.setPassword(passwordEncoder.encode(dto.password()));
+        return userMapper.toResponse(userRepository.save(user));
     }
 
     @Override
@@ -59,8 +58,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserResponseDTO getUserById(Long id) {
-        User user = getUserByIdOrThrow(id);
-        return userMapper.toResponse(user);
+        return userMapper.toResponse(getUserByIdOrThrow(id));
     }
 
     @Override
@@ -85,8 +83,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     @Transactional
     public void deleteUser(Long id) {
-        User user = getUserByIdOrThrow(id);
-        userRepository.delete(user);
+        userRepository.delete(getUserByIdOrThrow(id));
     }
 
 

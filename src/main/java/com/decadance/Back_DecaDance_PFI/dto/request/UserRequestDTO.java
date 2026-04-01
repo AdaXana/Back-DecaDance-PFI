@@ -15,7 +15,7 @@ public record UserRequestDTO(
     String email,
 
     @NotBlank(message = "La contraseña es obligatoria")  
-    @Size(min = 8, max = 15, message = "La contraseña debe tener entre 8 y 12 caracteres") 
+    @Size(min = 8, max = 15, message = "La contraseña debe tener entre 8 y 15 caracteres") 
     String password,
 
 

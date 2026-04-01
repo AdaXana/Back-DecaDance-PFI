@@ -18,8 +18,8 @@ public record SongRequestDTO(
     @NotNull(message = "El año es obligatorio")
     Integer year,
 
-    @NotBlank(message = "El género es obligatorio")
-    String genre,
+    @NotNull(message = "El ID del género es obligatorio")
+    Long idGenre,
 
     @NotBlank(message = "La URL de la portada es obligatoria")
     @URL(message = "Debe ser una URL válida")

@@ -38,7 +38,9 @@ public class User {
     @Column(nullable = true)
     private String image;
 
-    // metricas que por ahora no voy a segmentar en otra tabla.
+    @Column(nullable = true)
+    private String deezerAuth;
+
     @Column(nullable = false)
     private Integer played = 0;
 

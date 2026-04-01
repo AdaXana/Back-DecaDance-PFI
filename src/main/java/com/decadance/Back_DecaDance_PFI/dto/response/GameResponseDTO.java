@@ -6,8 +6,12 @@ import java.util.UUID;
 public record GameResponseDTO(
 
     UUID idGame,
+    String mode,
     String status,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    Long idGenre,
+    String genreName,
+    Long winnerId
 
 ) {
 

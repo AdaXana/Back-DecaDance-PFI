@@ -5,7 +5,7 @@ import com.decadance.Back_DecaDance_PFI.dto.request.SongRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.SongResponseDTO;
 
 public interface SongService {
-    SongResponseDTO createSong(SongRequestDTO request);
+    SongResponseDTO createSong(SongRequestDTO dto);
     List<SongResponseDTO> getAllSongs();
     List<SongResponseDTO> getActiveSongs();
     SongResponseDTO getSongById(Long id);
@@ -13,6 +13,7 @@ public interface SongService {
     SongResponseDTO updateArtist(Long id, String newArtist);
     SongResponseDTO updateYear(Long id, Integer newYear);
     SongResponseDTO updateCoverUrl(Long id, String newCoverUrl);
+    SongResponseDTO updateGenre(Long id, Long newIdGenre);
     SongResponseDTO updateStatus(Long id, Boolean isActive);
     void deleteSong(Long id);
 

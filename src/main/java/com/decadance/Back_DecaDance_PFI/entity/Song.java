@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,9 +33,6 @@ public class Song {
     @Column(nullable = false)
     private Integer year;
 
-    @Column(nullable = false)
-    private String genre;
-
     @Column(nullable = false, length = 500)
     private String coverUrl;
 
@@ -43,4 +42,7 @@ public class Song {
     @Column(nullable = false)
     private Boolean isActive = true;
     
+    @ManyToOne
+    @JoinColumn(name = "genre_id", nullable = false)
+    private Genre genre;
 }

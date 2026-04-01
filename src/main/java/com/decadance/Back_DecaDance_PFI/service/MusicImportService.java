@@ -4,6 +4,7 @@ import com.decadance.Back_DecaDance_PFI.dto.external.ExportifyCsvDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.DataResponseDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.DeezerSearchResponseDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.SongRequestDTO;
+import com.decadance.Back_DecaDance_PFI.entity.Genre;
 import com.decadance.Back_DecaDance_PFI.entity.Song;
 import com.decadance.Back_DecaDance_PFI.mapper.SongMapper;
 import com.decadance.Back_DecaDance_PFI.repository.SongRepository;
@@ -23,16 +24,18 @@ public class MusicImportService {
     private final WebClient webClient;
     private final SongRepository songRepository;
     private final SongMapper songMapper;
+    private final GenreService genreService;
 
-    public MusicImportService(WebClient webClient, SongRepository songRepository, SongMapper songMapper) {
+    public MusicImportService(WebClient webClient, SongRepository songRepository, SongMapper songMapper , GenreService genreService) {
         this.webClient = webClient;
         this.songRepository = songRepository;
         this.songMapper = songMapper;
+        this.genreService = genreService;
     }
 
-    public void importSongsFromCsv() {
+    public void importSongsFromCsv(String fileName) {
         try {
-            ClassPathResource resource = new ClassPathResource("data/pills.csv");
+            ClassPathResource resource = new ClassPathResource("data/" + fileName);
             BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()));
 
             List<ExportifyCsvDTO> csvSongs = new CsvToBeanBuilder<ExportifyCsvDTO>(reader)
@@ -48,9 +51,33 @@ public class MusicImportService {
                     Thread.currentThread().interrupt();
                 }
             }
+            System.out.println("Importación de " + fileName + " completada con éxito.");
         } catch (Exception e) {
             System.err.println("Error al leer el CSV: " + e.getMessage());
         }
+    }
+
+    public List<SongRequestDTO> searchSongsInDeezer(String query) {
+        DeezerSearchResponseDTO searchResponse = executeDeezerSearch(query);
+
+        if (searchResponse == null || searchResponse.data() == null)
+            return List.of();
+        
+        List<SongRequestDTO> finalResults = new ArrayList<>();
+        for (DataResponseDTO trackInfo : searchResponse.data().stream().limit(50).toList()) {
+            EnrichedData enriched = enrichSongData(trackInfo.album().id(), trackInfo.title());
+            Genre genre = genreService.getOrCreateGenre(enriched.genreName());
+            SongRequestDTO songDTO = new SongRequestDTO(
+                    trackInfo.id(),
+                    trackInfo.title(),
+                    trackInfo.artist().name(),
+                    enriched.year(),
+                    genre.getIdGenre(),
+                    trackInfo.album().coverMedium(),
+                    trackInfo.preview());
+            finalResults.add(songDTO);
+        }
+        return finalResults;
     }
 
     private void fetchAndSaveSong(ExportifyCsvDTO row) {
@@ -63,38 +90,22 @@ public class MusicImportService {
         if (searchResponse != null && !searchResponse.data().isEmpty()) {
             DataResponseDTO trackInfo = searchResponse.data().get(0);
 
+            if (songRepository.findByDeezerId(trackInfo.id()).isPresent()) {
+                System.out.println("⏭️ Saltando (ya existe): " + trackInfo.title());
+                return;
+            }
+
             EnrichedData enriched = enrichSongData(trackInfo.album().id(), trackInfo.title());
 
             Song song = songMapper.toEntity(trackInfo);
             song.setYear(enriched.year());
-            song.setGenre(enriched.genre());
+            
+            Genre genreEntity = genreService.getOrCreateGenre(enriched.genreName());
+            song.setGenre(genreEntity);
+            
             songRepository.save(song);
         }
     }
-
-    public List<SongRequestDTO> searchSongsInDeezer(String query) {
-        DeezerSearchResponseDTO searchResponse = executeDeezerSearch(query);
-
-        if (searchResponse == null || searchResponse.data() == null || searchResponse.data().isEmpty()) {
-            return List.of();
-        }
-        List<DataResponseDTO> topResults = searchResponse.data().stream().limit(50).toList();
-        List<SongRequestDTO> finalResults = new ArrayList<>();
-        for (DataResponseDTO trackInfo : topResults) {
-            EnrichedData enriched = enrichSongData(trackInfo.album().id(), trackInfo.title());
-            SongRequestDTO songDTO = new SongRequestDTO(
-                    trackInfo.id(),
-                    trackInfo.title(),
-                    trackInfo.artist().name(),
-                    enriched.year(),
-                    enriched.genre(),
-                    trackInfo.album().coverMedium(),
-                    trackInfo.preview());
-            finalResults.add(songDTO);
-        }
-        return finalResults;
-    }
-
 
     private DeezerSearchResponseDTO executeDeezerSearch(String query) {
         return webClient.get()
@@ -109,7 +120,7 @@ public class MusicImportService {
 
     private EnrichedData enrichSongData(Long albumId, String title) {
         Integer year = 0;
-        String genre = "all";
+        String genreName = "unknown";
         try {
             DataResponseDTO.AlbumDTO albumDetail = webClient.get()
                     .uri("/album/" + albumId)
@@ -122,16 +133,16 @@ public class MusicImportService {
                 }
                 if (albumDetail.genres() != null && albumDetail.genres().data() != null
                         && !albumDetail.genres().data().isEmpty()) {
-                    genre = albumDetail.genres().data().get(0).name();
+                    genreName = albumDetail.genres().data().get(0).name();
                 }
             }
         } catch (Exception e) {
             System.err.println("Error al cargar detalles del álbum para: " + title);
         }
-        return new EnrichedData(year, genre);
+        return new EnrichedData(year, genreName);
     }
 
-    private record EnrichedData(Integer year, String genre) {
+    private record EnrichedData(Integer year, String genreName) {
     }
 
 }

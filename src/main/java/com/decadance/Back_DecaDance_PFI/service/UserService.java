@@ -9,7 +9,7 @@ import com.decadance.Back_DecaDance_PFI.dto.response.UserResponseDTO;
 
 public interface UserService {
 
-    UserResponseDTO registerUser(UserRequestDTO request);
+    UserResponseDTO registerUser(UserRequestDTO dto);
     UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
     List<UserResponseDTO> getAllUsers();
     UserResponseDTO getUserById(Long id);

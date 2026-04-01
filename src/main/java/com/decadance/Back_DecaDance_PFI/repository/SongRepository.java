@@ -10,5 +10,5 @@ public interface SongRepository extends JpaRepository<Song, Long> {
 
     Optional<Song> findByDeezerId(Long deezerId);
     List<Song> findByIsActiveTrue();
-
+    List<Song> findByGenre_IdGenreAndIsActiveTrue(Long idGenre);
 }

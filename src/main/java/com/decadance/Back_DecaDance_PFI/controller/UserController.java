@@ -1,8 +1,6 @@
 package com.decadance.Back_DecaDance_PFI.controller;
 
 import java.util.List;
-import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,7 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.decadance.Back_DecaDance_PFI.dto.request.UserImageUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.request.UserNameUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.UserResponseDTO;

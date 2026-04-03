@@ -1,6 +1,7 @@
 package com.decadance.Back_DecaDance_PFI.controller;
 
 import java.util.List;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,12 +10,12 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.decadance.Back_DecaDance_PFI.dto.request.UserImageUpdateRequestDTO;
+import org.springframework.web.multipart.MultipartFile;
 import com.decadance.Back_DecaDance_PFI.dto.request.UserNameUpdateRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.UserResponseDTO;
 import com.decadance.Back_DecaDance_PFI.service.UserService;
-
 import jakarta.validation.Valid;
 
 @RestController
@@ -46,9 +47,9 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PatchMapping("/image/{id}")
-    public ResponseEntity<UserResponseDTO> updateUserImage(@PathVariable Long id, @Valid @RequestBody UserImageUpdateRequestDTO payload) {
-        UserResponseDTO response = userService.updateUserImage(id, payload.image());
+    @PatchMapping(value = "/image/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponseDTO> updateUserImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        UserResponseDTO response = userService.updateUserImage(id, file);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

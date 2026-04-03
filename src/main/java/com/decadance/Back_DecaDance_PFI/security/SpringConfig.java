@@ -34,11 +34,12 @@ public class SpringConfig {
             .authorizeHttpRequests(request -> request
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/songs/active").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/songs/active").permitAll()
                 .requestMatchers("/api/v1/songs/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/users/username/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/users").hasAnyRole("ADMIN", "USER")
                 .requestMatchers("/api/v1/games/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/genres").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilter(authenticationFilter)

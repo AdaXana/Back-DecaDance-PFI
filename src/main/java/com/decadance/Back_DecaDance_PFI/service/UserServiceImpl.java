@@ -1,13 +1,20 @@
 package com.decadance.Back_DecaDance_PFI.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.decadance.Back_DecaDance_PFI.dto.request.UserRequestDTO;
 import com.decadance.Back_DecaDance_PFI.dto.response.UserResponseDTO;
 import com.decadance.Back_DecaDance_PFI.entity.User;
 import com.decadance.Back_DecaDance_PFI.mapper.UserMapper;
 import com.decadance.Back_DecaDance_PFI.repository.UserRepository;
+
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,11 +28,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final Cloudinary cloudinary;    
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, Cloudinary cloudinary) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.cloudinary = cloudinary;
     }
 
     @Override
@@ -74,10 +83,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     @Transactional
-    public UserResponseDTO updateUserImage(Long id, String image) {
+    public UserResponseDTO updateUserImage(Long id, MultipartFile file) {
         User user = getUserByIdOrThrow(id);
-        user.setImage(image); 
-        return userMapper.toResponse(userRepository.save(user));
+        try {
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+            String imageUrl = uploadResult.get("secure_url").toString();
+            user.setImage(imageUrl); 
+            return userMapper.toResponse(userRepository.save(user));
+        } catch (IOException e) {
+            throw new RuntimeException("Error al subir la imagen a Cloudinary", e);
+        }
     }
 
     @Override
